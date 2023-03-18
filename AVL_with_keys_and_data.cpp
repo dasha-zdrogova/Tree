@@ -77,6 +77,7 @@ Node* rebalance(Node* node) {
         if (get_balance(node->right) > 0) node->right = right_rotate(node->right);
         return left_rotate(node);
     }
+    if (node) node->height = max(get_height(node->left), get_height(node->right))+1;
     return node;
 }
 
@@ -125,6 +126,7 @@ Node* del(Node* root, int key){
     }
 
     if (!root) return root; // Возвращаем пустое дерево
+    root->height = 1 + max(get_height(root->left), get_height(root->left));
     return rebalance(root);
 }
 
