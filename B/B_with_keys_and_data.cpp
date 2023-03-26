@@ -13,6 +13,7 @@ struct Item {
 };
 
 class BTreeNode {
+public:
     Item* elems;
     int t;
 
@@ -20,11 +21,10 @@ class BTreeNode {
     int n;
     bool leaf;
 
-public:
     BTreeNode(int _t, bool _leaf);
     void print(int offset = 0);
 
-    BTreeNode *search(int k);
+    int* search(int k);
     int find_key(int k);
     void insert_non_full(int k, int data);
     void split(int i, BTreeNode *y);
@@ -43,9 +43,10 @@ public:
 };
 
 class BTree {
+public:
     BTreeNode* root;
     int t;
-public:
+
     BTree (int _t) {
         root = nullptr;
         t = _t;
@@ -55,8 +56,8 @@ public:
         if (root) root->print(offset);
     }
 
-    BTreeNode* search(int k) {
-        if (!root) return nullptr;
+    int* search(int k) {
+        if (!root) return 0;
         return root->search(k);
     }
 
@@ -69,6 +70,7 @@ BTreeNode::BTreeNode(int _t, bool _leaf){
     leaf = _leaf;
     elems = new Item[2*t-1];
     C = new BTreeNode *[2*t];
+    for (int i = 0; i < 2*t; i++) C[i] = nullptr;
     n = 0;
 }
 
@@ -96,9 +98,9 @@ int BTreeNode::find_key(int k) {
     return index;
 }
 
-BTreeNode* BTreeNode::search(int k) {
+int* BTreeNode::search(int k) {
     int i = this->find_key(k);
-    if (elems[i].key == k) return this;
+    if (i < n && elems[i].key == k) return &elems[i].data;
     if (leaf) return nullptr;
     return C[i]->search(k);
 }
@@ -110,6 +112,7 @@ void BTree::insert(int k, int d) {
         root->n = 1;
     }
     else {
+        if (root->search(k)) return;
         if (root->n == 2*t - 1) {
             BTreeNode *new_root = new BTreeNode(t, false);
             new_root->C[0] = root;
@@ -128,10 +131,17 @@ void BTreeNode::insert_non_full(int k, int d) {
     int i = n-1;
 
     if (leaf) {
-        while (i >= 0 && elems[i].key > k) {
-            elems[i+1] = elems[i]; i--;
+        if (this->find_key(k) < n && elems[this->find_key(k)].key != k) {
+            while (i >= 0 && elems[i].key > k) {
+                elems[i+1] = elems[i]; i--;
+            }
+            elems[i+1] = Item(k, d); n++;
         }
-        elems[i+1] = Item(k, d); n++;
+        else if (this->find_key(k) == n) {
+            elems[n] = Item(k, d);
+            n++;
+        }
+        return;
     }
     else {
         while (i >= 0 && elems[i].key > k) i--;
@@ -293,9 +303,13 @@ void BTreeNode::merge(int index) {
     return;
 }
 
+/*
 int main() {
     BTree t(3);
-
+    t.insert(1, 1);
+    t.insert(1, 2);
+    t.print();
+    /*
     int n = 30;
     vector<pair<int, int>> a(n);
     for(int i = 1; i < n + 1; ++i)
@@ -317,3 +331,4 @@ int main() {
     }
     return 0;
 }
+*/
