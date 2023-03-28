@@ -81,6 +81,15 @@ Node* rebalance(Node* node) {
     return node;
 }
 
+
+Node *search(Node* root, int key) {
+    if (!root) return nullptr;
+    if (root->key == key) return root;
+    if (root->key > key) return search(root->left, key);
+    if (root->key < key) return search(root->right, key);
+    return nullptr;
+}
+
 Node *insert(Node* node, int key, int data){
     if (node == nullptr) return(new_node(key, data));
     if (key < node->key) node->left = insert(node->left, key, data);
