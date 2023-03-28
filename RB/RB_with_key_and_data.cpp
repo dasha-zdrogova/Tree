@@ -103,6 +103,35 @@ class RBTree {
         x2->elem = tmp;
     }
 
+    Node *search_(int key) {
+        Node* tmp = root;
+        while(tmp) {
+            if (key < tmp->elem.key) {
+                if (!tmp->left) break;
+                else tmp = tmp->left;
+            }
+            else if (key == tmp->elem.key) break;
+            else { 
+                if (!tmp->right) break;
+                else tmp = tmp->right;
+            }
+        }
+        return tmp;
+    }
+
+    Node* succestor(Node* x) {
+        Node* current = x;
+        while(current->left) current = current->left;
+        return current;
+    }
+
+    Node* replacement(Node* x) {
+        if (x->left && x->right) return succestor(x->right);
+        if (!x->left && !x->right) return nullptr;
+        if (x->left) return x->left;
+        else return x->right;
+    }
+
     void fix_red(Node* x) {
         if (x == root) {
             x->color = BLACK;
@@ -142,68 +171,7 @@ class RBTree {
             }
         }
     }
-
-public:
-    RBTree() {root = nullptr;}
-    Node* get_root() {return root;}
-
-    void print(int offset = 0) {
-        if (root) root->print(offset);
-    }
-
-    Node *search(int key) {
-        Node* tmp = root;
-        while(tmp) {
-            if (key < tmp->elem.key) {
-                if (!tmp->left) break;
-                else tmp = tmp->left;
-            }
-            else if (key == tmp->elem.key) break;
-            else { 
-                if (!tmp->right) break;
-                else tmp = tmp->right;
-            }
-        }
-        return tmp;
-    }
-
-    void insert(Item n) {
-        int key = n.key;
-        Node* new_node = new Node(n);
-        if (!root) {
-            new_node->color = BLACK;
-            root = new_node;
-        } else {
-            Node *tmp = search(key);
-
-            if (tmp->elem.key == key) return;
-            new_node->parent = tmp;
-            if (key < tmp->elem.key) tmp->left = new_node;
-            else tmp->right = new_node;
-            fix_red(new_node);
-        }
-    }
-
-    Node* succestor(Node* x) {
-        Node* current = x;
-        while(current->left) current = current->left;
-        return current;
-    }
-
-    Node* replacement(Node* x) {
-        if (x->left && x->right) return succestor(x->right);
-        if (!x->left && !x->right) return nullptr;
-        if (x->left) return x->left;
-        else return x->right;
-    }
-
-    void del(int k) {
-        if (!root) return;
-        Node *v = search(k);
-        if (v->elem.key != k) return;
-        else erase(v);
-    }
-
+    
     void erase(Node *v) {
         Node *u = replacement(v);
         bool uvBlack = ((!u || u->color == BLACK) && (v->color == BLACK));
@@ -304,27 +272,69 @@ public:
         }
     }
 
+public:
+    RBTree() {root = nullptr;}
+    Node* get_root() {return root;}
+
+    void print(int offset = 0) {
+        if (root) root->print(offset);
+    }
+
+    int *search(int key) {
+        Node* tmp = root;
+        while(tmp) {
+            if (key < tmp->elem.key) tmp = tmp->left;
+            else if (key == tmp->elem.key) return &tmp->elem.data;
+            else tmp = tmp->right;
+        }
+        return nullptr;
+    }
+
+    void insert(Item n) {
+        int key = n.key;
+        Node* new_node = new Node(n);
+        if (!root) {
+            new_node->color = BLACK;
+            root = new_node;
+        } else {
+            Node *tmp = search_(key);
+
+            if (tmp->elem.key == key) return;
+            new_node->parent = tmp;
+            if (key < tmp->elem.key) tmp->left = new_node;
+            else tmp->right = new_node;
+            fix_red(new_node);
+        }
+    }
+
+    void del(int k) {
+        if (!root) return;
+        Node *v = search_(k);
+        if (v->elem.key != k) return;
+        else erase(v);
+    }
+
 };
 
-int main() {
-    RBTree t;
-    int n = 10;
-    vector <pair<int,int>> a(n);
-    for (int i = 1; i < n+1; i++) {
-        a[i-1] = {i, i+100};
-    }
-    auto rng = std::default_random_engine {};
-    std::shuffle(std::begin(a), std::end(a), rng);
+// int main() {
+//     RBTree t;
+//     int n = 10;
+//     vector <pair<int,int>> a(n);
+//     for (int i = 1; i < n+1; i++) {
+//         a[i-1] = {i, i+100};
+//     }
+//     auto rng = std::default_random_engine {};
+//     std::shuffle(std::begin(a), std::end(a), rng);
 
-    for (auto x:a) {
-        t.insert(Item(x.first, x.second));
-    }
-    t.print();
-    for (auto x:a) {
-        t.del(x.first);
-        cout << "------------------------------" << endl;
-        cout << x.first << " del" << endl;
-        t.print();
-    }
-    return 0;
-}
+//     for (auto x:a) {
+//         t.insert(Item(x.first, x.second));
+//     }
+//     t.print();
+//     for (auto x:a) {
+//         t.del(x.first);
+//         cout << "------------------------------" << endl;
+//         cout << x.first << " del" << endl;
+//         t.print();
+//     }
+//     return 0;
+// }
