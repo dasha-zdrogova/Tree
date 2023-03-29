@@ -46,6 +46,41 @@ public:
         }
     }
 
+    DSNode *replacement(DSNode *node) {
+        DSNode *current = node;
+        while(current->zero) current = current->zero;
+        return current;
+    }
+
+    DSNode *del(DSNode *root, int key, int n = 0) {
+        if (root->key == key) {
+            // у вершины менее 2 детей
+            if (!root->zero || !root->one) {
+                DSNode *tmp = root->zero ? root->zero : root->one;
+                if (!tmp){
+                    tmp = root;
+                    root = nullptr;
+                } 
+                else *root = *tmp;
+                delete tmp;
+            } else {
+                // у вершины есть 2 ребёнка
+                DSNode *tmp = replacement(root->one);
+                root->key = tmp->key;
+                root->data = tmp->data;
+                root->one = del(root->one, tmp->key, n+1);
+            } 
+        } else {
+            if (digit(key, n)) {
+                if (root->one) root->one = del(root->one, key, n+1);
+                else return nullptr;
+            } else {
+                if (root->zero) root->zero = del(root->zero, key, n+1);
+                else return nullptr;
+            }
+        }
+        return root;
+    }
 };
 
 class DSTree {
@@ -54,6 +89,9 @@ private:
 public:
     DSNode* root;
 
+    DSTree() {
+        root = nullptr;
+    };
 
     void print(DSNode* root, int offset = 0) {
         if (!root) return;
@@ -76,11 +114,17 @@ public:
         return root->insert(key, data);
     }
 
+    void del(int key){
+        if(!root) return;
+        if (root->search(key)) root = root->del(root, key);
+        else return;
+    }
+
 };
 
 int main() {
-    DSTree t;
-    int n = 24;
+    auto t = DSTree();
+    int n = 10;
     vector <pair<int,int>> a(n);
     for (int i = 1; i < n+1; i++) {
         a[i-1] = {i, i+100};
@@ -91,6 +135,22 @@ int main() {
     for (auto x:a) {
         t.insert(x.first, x.second);
     }
+
+    for (auto x:a) {
+        if (!t.search(x.first)) cout << "problem" << endl;
+    }
+
+    for (auto x:a) {
+        if (t.search(x.first+100)) cout << "problem" << endl;
+    }
     t.print(t.root);
+    for (auto x:a) {
+        cout << x.first << " del" << endl;
+        t.del(x.first);
+        t.print(t.root);
+        cout << "----------------------------------" << endl;
+    }
+    
+    //t.print(t.root);
     return 0;
 }
