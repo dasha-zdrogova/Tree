@@ -122,6 +122,7 @@ public:
 
 };
 
+/*
 int main() {
     auto t = DSTree();
     int n = 10;
@@ -154,3 +155,4 @@ int main() {
     //t.print(t.root);
     return 0;
 }
+*/
